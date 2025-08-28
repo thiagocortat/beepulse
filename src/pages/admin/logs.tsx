@@ -17,7 +17,7 @@ export default function AdminLogs() {
   const [filteredLogs, setFilteredLogs] = useState<LogEntry[]>([])
   const [serviceFilter, setServiceFilter] = useState<string>('all')
   const [levelFilter, setLevelFilter] = useState<string>('all')
-  const [stats, setStats] = useState<Record<string, unknown>>({})
+  const [stats, setStats] = useState<any>({})
 
   useEffect(() => {
     loadLogs()
