@@ -75,7 +75,7 @@ export const insertLead = async (lead: Omit<LeadBeePulse, 'id' | 'created_at'>):
     }
 
     return data
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Erro ao inserir lead:', error)
     return null
   }
@@ -99,7 +99,7 @@ export const updateLeadWithAnalysis = async (leadId: number, analysisId: string)
     }
 
     return true
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Erro ao atualizar lead com análise:', error)
     return false
   }
@@ -186,7 +186,7 @@ export const getReportById = async (id: string): Promise<ReportData | null> => {
     }
 
     return data as ReportData
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Erro ao buscar relatório:', error)
     return null
   }
@@ -218,7 +218,7 @@ export const insertAnalysis = async (analysis: Omit<AnalysisRecord, 'id' | 'crea
     }
 
     return data
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Erro ao inserir análise:', error)
     return null
   }
@@ -242,7 +242,7 @@ export const getAnalysisById = async (id: string): Promise<AnalysisRecord | null
     }
 
     return data
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Erro ao buscar análise:', error)
     return null
   }
@@ -268,7 +268,7 @@ export const getCachedAnalysis = async (siteUrl: string): Promise<AnalysisRecord
     }
 
     return data
-  } catch (error) {
+  } catch (error: unknown) {
     return null
   }
 }

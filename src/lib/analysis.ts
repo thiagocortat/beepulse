@@ -3,7 +3,7 @@ import { apiCache, CACHE_TTL, generateCacheKey, cacheWithFallback } from './cach
 import { calculateBeePulseScore } from './score-calculator'
 
 // Helper function to calculate good percentage from CrUX histogram
-function calculateGoodPercentage(metric: any): number {
+function calculateGoodPercentage(metric: Record<string, unknown>): number {
   if (!metric?.histogram) return 0
   
   // Find the "good" bucket (first bucket in histogram)
@@ -49,10 +49,10 @@ export async function analyzeWebsite(url: string, hotelName: string): Promise<An
     // Get opportunities
     const audits = psiData.lighthouseResult.audits || {}
     const getOpportunities = (category: string) => {
-      const categoryAudits = Object.values(audits).filter((audit: any) => 
+      const categoryAudits = Object.values(audits).filter((audit: Record<string, unknown>) => 
         audit?.group === category && audit?.score < 1 && audit?.details?.items?.length > 0
       )
-      return categoryAudits.slice(0, 3).map((audit: any) => ({
+      return categoryAudits.slice(0, 3).map((audit: Record<string, unknown>) => ({
         title: audit.title,
         description: audit.description,
         impact: audit.details?.overallSavingsMs || 0

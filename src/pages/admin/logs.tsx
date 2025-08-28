@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Logger from '@/lib/logger'
 import Head from 'next/head'
 import Link from 'next/link'
@@ -8,7 +8,7 @@ interface LogEntry {
   level: 'info' | 'warn' | 'error'
   service: 'salesforce' | 'mailersend' | 'supabase' | 'general'
   message: string
-  data?: any
+  data?: Record<string, unknown>
   error?: string
 }
 
@@ -17,17 +17,13 @@ export default function AdminLogs() {
   const [filteredLogs, setFilteredLogs] = useState<LogEntry[]>([])
   const [serviceFilter, setServiceFilter] = useState<string>('all')
   const [levelFilter, setLevelFilter] = useState<string>('all')
-  const [stats, setStats] = useState<any>({})
+  const [stats, setStats] = useState<Record<string, unknown>>({})
 
   useEffect(() => {
     loadLogs()
     const interval = setInterval(loadLogs, 5000) // Atualizar a cada 5 segundos
     return () => clearInterval(interval)
   }, [])
-
-  useEffect(() => {
-    applyFilters()
-  }, [logs, serviceFilter, levelFilter])
 
   const loadLogs = () => {
     const allLogs = Logger.getLogs()
@@ -36,7 +32,7 @@ export default function AdminLogs() {
     setStats(logStats)
   }
 
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     let filtered = logs
 
     if (serviceFilter !== 'all') {
@@ -48,7 +44,11 @@ export default function AdminLogs() {
     }
 
     setFilteredLogs(filtered)
-  }
+  }, [logs, serviceFilter, levelFilter])
+
+  useEffect(() => {
+    applyFilters()
+  }, [applyFilters])
 
   const getLevelBadge = (level: string) => {
     const baseClasses = 'px-2 py-1 rounded-full text-xs font-semibold'

@@ -14,7 +14,7 @@ interface SalesforceTokenResponse {
 interface SalesforceLeadResponse {
   id: string
   success: boolean
-  errors: any[]
+  errors: unknown[]
 }
 
 class SalesforceService {

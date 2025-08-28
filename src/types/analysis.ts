@@ -109,7 +109,7 @@ export interface PSIResponse {
       description: string;
       score?: number;
       numericValue?: number;
-      details?: any;
+      details?: Record<string, unknown>;
     }>;
   };
 }
@@ -168,6 +168,7 @@ export interface ObservatoryResponse {
   tests_failed: number;
   tests_quantity: number;
   response_headers: Record<string, string>;
+  rawObservatoryData?: Record<string, unknown>;
 }
 
 export interface RDAPResponse {
@@ -177,7 +178,7 @@ export interface RDAPResponse {
   }>;
   entities?: Array<{
     handle: string;
-    vcardArray?: Array<any>;
+    vcardArray?: Array<unknown>;
   }>;
 }
 

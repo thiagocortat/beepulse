@@ -24,7 +24,7 @@ export function calculateBeePulseScore(snapshot: AnalysisSnapshot): number {
                      !snapshot.notes.missingDataFlags.includes('crux-desktop');
   
   let totalScore = 0;
-  let maxPossibleScore = 100;
+  const maxPossibleScore = 100;
   
   // Base Score (60% or 70% if no CrUX data)
   const baseWeight = hasCrUXData ? 0.6 : 0.7;
@@ -33,7 +33,7 @@ export function calculateBeePulseScore(snapshot: AnalysisSnapshot): number {
   
   // Real User Experience (25% or 0% if no CrUX data)
   if (hasCrUXData) {
-    const cruxScore = calculateCrUXScore(snapshot);
+    const cruxScore = calculateCruxScore(snapshot);
     totalScore += cruxScore * 0.25;
   }
   
@@ -61,7 +61,7 @@ function calculateBaseScore(snapshot: AnalysisSnapshot): number {
   );
 }
 
-function calculateCrUXScore(snapshot: AnalysisSnapshot): number {
+function calculateCruxScore(snapshot: AnalysisSnapshot): number {
   const { crux } = snapshot;
   
   // Average mobile and desktop scores
