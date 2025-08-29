@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { AnalysisSnapshot } from '@/types/analysis'
 import jsPDF from 'jspdf'
 
-function generateDemoPDF(snapshot: AnalysisSnapshot): Buffer {
+function generateDemoPDF(snapshot: AnalysisSnapshot): Uint8Array {
   const pdf = new jsPDF()
   const pageWidth = pdf.internal.pageSize.getWidth()
   const margin = 20
@@ -53,7 +53,7 @@ function generateDemoPDF(snapshot: AnalysisSnapshot): Buffer {
   pdf.text(`SSL Labs: ${snapshot.security.sslLabsGrade}`, margin, yPos + 30)
   pdf.text(`Observatory: ${snapshot.security.observatoryGrade}`, margin, yPos + 45)
   
-  return Buffer.from(pdf.output('arraybuffer'))
+  return new Uint8Array(pdf.output('arraybuffer'))
 }
 
 export async function POST(request: NextRequest) {
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
 
     const pdfBuffer = generateDemoPDF(snapshot)
 
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(Buffer.from(pdfBuffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
