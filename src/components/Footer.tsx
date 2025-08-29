@@ -19,17 +19,17 @@ export default function Footer() {
             <h4 className="text-white font-semibold mb-4">Produto</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#como-funciona" className="text-gray-400 hover:text-yellow-400 transition-colors">
+                <a href="/como-funciona" className="text-gray-400 hover:text-yellow-400 transition-colors">
                   Como funciona
                 </a>
               </li>
               <li>
-                <a href="#beneficios" className="text-gray-400 hover:text-yellow-400 transition-colors">
+                <a href="/beneficios" className="text-gray-400 hover:text-yellow-400 transition-colors">
                   Benefícios
                 </a>
               </li>
               <li>
-                <a href="#relatorio" className="text-gray-400 hover:text-yellow-400 transition-colors">
+                <a href="/exemplo-relatorio" className="text-gray-400 hover:text-yellow-400 transition-colors">
                   Exemplo de Relatório
                 </a>
               </li>
@@ -40,17 +40,17 @@ export default function Footer() {
             <h4 className="text-white font-semibold mb-4">Omnibees</h4>
             <ul className="space-y-2">
               <li>
-                <a href="https://omnibees.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-yellow-400 transition-colors">
+                <a href="/site-oficial" className="text-gray-400 hover:text-yellow-400 transition-colors">
                   Site Oficial
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-yellow-400 transition-colors">
+                <a href="/sobre-nos" className="text-gray-400 hover:text-yellow-400 transition-colors">
                   Sobre Nós
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-yellow-400 transition-colors">
+                <a href="/contato" className="text-gray-400 hover:text-yellow-400 transition-colors">
                   Contato
                 </a>
               </li>
