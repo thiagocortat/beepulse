@@ -53,12 +53,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=sua-chave-publica-anonima
 GOOGLE_API_KEY=sua-chave-google-api
 SAFE_BROWSING_API_KEY=sua-chave-safe-browsing
 
-# Salesforce (opcional)
-SALESFORCE_CLIENT_ID=seu-client-id
-SALESFORCE_CLIENT_SECRET=seu-client-secret
-SALESFORCE_USERNAME=seu-username
-SALESFORCE_PASSWORD=sua-senha
-SALESFORCE_SECURITY_TOKEN=seu-token
+# Salesforce Integration (Webhook)
+SALESFORCE_WEBHOOK_URL=https://your-webhook-url.com/salesforce
 
 # MailerSend (opcional)
 MAILERSEND_API_TOKEN=seu-token-mailersend

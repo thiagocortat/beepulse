@@ -2,57 +2,27 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { supabase, LeadBeePulse } from '@/lib/supabase'
 import Logger from '@/lib/logger'
 
-interface SalesforceTokenResponse {
-  access_token: string
-  instance_url: string
-  id: string
-  token_type: string
-  issued_at: string
-  signature: string
-}
-
-interface SalesforceLeadResponse {
-  id: string
+interface SalesforceWebhookResponse {
   success: boolean
-  errors: unknown[]
+  id?: string
+  message?: string
+  errors?: unknown[]
 }
 
 class SalesforceService {
-  private static async getAccessToken(): Promise<string> {
-    const tokenUrl = `${process.env.SALESFORCE_INSTANCE_URL}/services/oauth2/token`
-    
-    const params = new URLSearchParams({
-      grant_type: 'refresh_token',
-      client_id: process.env.SALESFORCE_CLIENT_ID!,
-      client_secret: process.env.SALESFORCE_CLIENT_SECRET!,
-      refresh_token: process.env.SALESFORCE_REFRESH_TOKEN!
-    })
-
-    const response = await fetch(tokenUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: params
-    })
-
-    if (!response.ok) {
-      throw new Error(`Failed to get Salesforce token: ${response.statusText}`)
-    }
-
-    const data: SalesforceTokenResponse = await response.json()
-    return data.access_token
-  }
-
   static async createLead(leadData: LeadBeePulse): Promise<string> {
-    const accessToken = await this.getAccessToken()
+    const webhookUrl = process.env.SALESFORCE_WEBHOOK_URL
+    
+    if (!webhookUrl) {
+      throw new Error('SALESFORCE_WEBHOOK_URL não configurada')
+    }
     
     // Separar nome completo em FirstName e LastName
     const nameParts = leadData.nome_completo.trim().split(' ')
     const firstName = nameParts[0]
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'N/A'
     
-    const salesforceData = {
+    const webhookData = {
       FirstName: firstName,
       LastName: lastName,
       Email: leadData.email,
@@ -61,30 +31,32 @@ class SalesforceService {
       Website: leadData.site_url,
       Status: 'Novo Lead – BeePulse',
       Score_BeePulse__c: leadData.score_basico ? parseFloat(leadData.score_basico) : null,
-      Relatorio_BeePulse_URL__c: leadData.pdf_url
+      Relatorio_BeePulse_URL__c: leadData.pdf_url,
+      Source: 'BeePulse',
+      CreatedAt: new Date().toISOString()
     }
 
-    const response = await fetch(`${process.env.SALESFORCE_INSTANCE_URL}/services/data/v58.0/sobjects/Lead/`, {
+    const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'User-Agent': 'BeePulse/1.0'
       },
-      body: JSON.stringify(salesforceData)
+      body: JSON.stringify(webhookData)
     })
 
     if (!response.ok) {
       const errorData = await response.text()
-      throw new Error(`Failed to create Salesforce lead: ${response.statusText} - ${errorData}`)
+      throw new Error(`Failed to send lead to Salesforce webhook: ${response.statusText} - ${errorData}`)
     }
 
-    const result: SalesforceLeadResponse = await response.json()
+    const result: SalesforceWebhookResponse = await response.json()
     
     if (!result.success) {
-      throw new Error(`Salesforce lead creation failed: ${JSON.stringify(result.errors)}`)
+      throw new Error(`Salesforce webhook failed: ${result.message || JSON.stringify(result.errors)}`)
     }
 
-    return result.id
+    return result.id || `webhook_${Date.now()}`
   }
 }
 
@@ -106,12 +78,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Tentar enviar para o Salesforce
     try {
-      // Verificar se as variáveis de ambiente do Salesforce estão configuradas
-      if (process.env.SALESFORCE_CLIENT_ID && 
-          process.env.SALESFORCE_CLIENT_SECRET && 
-          process.env.SALESFORCE_INSTANCE_URL && 
-          process.env.SALESFORCE_REFRESH_TOKEN &&
-          process.env.SALESFORCE_CLIENT_ID !== 'your_salesforce_client_id') {
+      // Verificar se a URL do webhook do Salesforce está configurada
+      if (process.env.SALESFORCE_WEBHOOK_URL && 
+          process.env.SALESFORCE_WEBHOOK_URL !== 'https://your-webhook-url.com/salesforce') {
         
         salesforceId = await SalesforceService.createLead(leadData)
         Logger.info('salesforce', 'Lead enviado com sucesso', { salesforceId, email: leadData.email })

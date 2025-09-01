@@ -166,11 +166,8 @@ GOOGLE_API_KEY=
 # Safe Browsing
 SAFE_BROWSING_API_KEY=
 
-# Salesforce (OAuth2)
-SALESFORCE_CLIENT_ID=
-SALESFORCE_CLIENT_SECRET=
-SALESFORCE_INSTANCE_URL=
-SALESFORCE_REFRESH_TOKEN=
+# Salesforce (Webhook)
+SALESFORCE_WEBHOOK_URL=
 
 # MailerSend
 MAILERSEND_API_KEY=
@@ -189,10 +186,11 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 ## 10) Integração Salesforce (Sprint 4)
 
-* Criar Lead em `/sobjects/Lead` com: FirstName, LastName, Email, Phone, Company = `Hotel <hotel_name>`, Website = `site_url`.
+* Enviar Lead via webhook HTTP POST com: FirstName, LastName, Email, Phone, Company = `Hotel <hotel_name>`, Website = `site_url`.
 * Custom fields: `Score_BeePulse__c`, `Relatorio_BeePulse_URL__c`.
-* **Status inicial**: “Novo Lead – BeePulse”.
-* Reprocessar em caso de 401 (refresh token). Logar `salesforce_id` no lead.
+* **Status inicial**: "Novo Lead – BeePulse".
+* Adicionar campos: `Source: 'BeePulse'`, `CreatedAt: ISO timestamp`.
+* Webhook deve retornar `{success: boolean, id?: string, message?: string}`. Logar `salesforce_id` no lead.
 
 ---
 
