@@ -32,7 +32,7 @@ class SalesforceService {
       Website: leadData.site_url,
       Status: 'Novo Lead – BeePulse',
       Score_BeePulse__c: leadData.score_basico ? parseFloat(leadData.score_basico) : null,
-      Relatorio_BeePulse_URL__c: leadData.pdf_url,
+//      Relatorio_BeePulse_URL__c: leadData.pdf_url,
       Source: 'BeePulse',
       CreatedAt: new Date().toISOString()
     }
