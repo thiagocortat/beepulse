@@ -56,8 +56,8 @@ SAFE_BROWSING_API_KEY=sua-chave-safe-browsing
 # Salesforce Integration (Webhook)
 SALESFORCE_WEBHOOK_URL=https://your-webhook-url.com/salesforce
 
-# MailerSend (opcional)
-MAILERSEND_API_TOKEN=seu-token-mailersend
+# MailerSend (DESATIVADO)
+# MAILERSEND_API_TOKEN=seu-token-mailersend
 ```
 
 ### 4. Configure o Supabase

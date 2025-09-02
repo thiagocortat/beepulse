@@ -76,25 +76,7 @@ export default function LeadForm({ analysisData }: LeadFormProps) {
       
       router.push(`/relatorio/${leadId}`)
       
-      setTimeout(async () => {
-        try {
-          await fetch('/api/email', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              leadId: leadId,
-              nome: formData.nome_completo,
-              email: formData.email,
-              linkRelatorio: `${window.location.origin}/relatorio/${leadId}`,
-              nomeHotel: formData.nome_hotel
-            })
-          })
-        } catch (emailError) {
-          console.error('Erro ao enviar email:', emailError)
-        }
-      }, 1000)
+      // Email desativado - removido conforme solicitação do usuário
       
     } catch (err) {
       setError('Erro ao enviar formulário. Tente novamente.')

@@ -169,11 +169,11 @@ SAFE_BROWSING_API_KEY=
 # Salesforce (Webhook)
 SALESFORCE_WEBHOOK_URL=
 
-# MailerSend
-MAILERSEND_API_KEY=
-MAILERSEND_TEMPLATE_ID_LEAD=
-MAILERSEND_FROM_EMAIL=
-MAILERSEND_FROM_NAME=BeePulse · Omnibees
+# MailerSend (DESATIVADO)
+# MAILERSEND_API_KEY=
+# MAILERSEND_TEMPLATE_ID_LEAD=
+# MAILERSEND_FROM_EMAIL=
+# MAILERSEND_FROM_NAME=BeePulse · Omnibees
 
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=
@@ -194,11 +194,12 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 ---
 
-## 11) Email MailerSend (Sprint 4)
+## 11) Email MailerSend (DESATIVADO)
 
-* Template com placeholders: `{{nome}}`, `{{link_relatorio}}`.
-* Assunto: “Seu Diagnóstico Digital – BeePulse Omnibees”.
-* Envio após geração do PDF; registrar `email_sent = true`.
+* **DESATIVADO**: Funcionalidade de envio de email foi removida conforme solicitação.
+* Template com placeholders: `{{nome}}`, `{{link_relatorio}}` (não utilizado).
+* Assunto: "Seu Diagnóstico Digital – BeePulse Omnibees" (não utilizado).
+* Campo `email_sent` permanece na estrutura do banco mas não é mais atualizado.
 
 ---
 
