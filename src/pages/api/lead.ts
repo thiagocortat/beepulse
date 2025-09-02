@@ -14,6 +14,7 @@ class SalesforceService {
     const webhookUrl = process.env.SALESFORCE_WEBHOOK_URL
     
     if (!webhookUrl) {
+      Logger.error('salesforce', 'SALESFORCE_WEBHOOK_URL não configurada', { email: leadData.email })
       throw new Error('SALESFORCE_WEBHOOK_URL não configurada')
     }
     
@@ -36,27 +37,84 @@ class SalesforceService {
       CreatedAt: new Date().toISOString()
     }
 
-    const response = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': 'BeePulse/1.0'
-      },
-      body: JSON.stringify(webhookData)
+    Logger.info('salesforce', 'Enviando lead para webhook', {
+      webhookUrl: webhookUrl.replace(/\/[^/]+$/, '/***'),
+      email: leadData.email,
+      payload: {
+        ...webhookData,
+        Email: leadData.email.replace(/(.{2}).*(@.*)/, '$1***$2')
+      }
     })
 
-    if (!response.ok) {
-      const errorData = await response.text()
-      throw new Error(`Failed to send lead to Salesforce webhook: ${response.statusText} - ${errorData}`)
-    }
-
-    const result: SalesforceWebhookResponse = await response.json()
+    const startTime = Date.now()
     
-    if (!result.success) {
-      throw new Error(`Salesforce webhook failed: ${result.message || JSON.stringify(result.errors)}`)
-    }
+    try {
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'BeePulse/1.0'
+        },
+        body: JSON.stringify(webhookData)
+      })
 
-    return result.id || `webhook_${Date.now()}`
+      const responseTime = Date.now() - startTime
+      
+      Logger.info('salesforce', 'Resposta do webhook recebida', {
+        email: leadData.email,
+        status: response.status,
+        statusText: response.statusText,
+        responseTime: `${responseTime}ms`,
+        headers: Object.fromEntries(response.headers.entries())
+      })
+
+      if (!response.ok) {
+        const errorData = await response.text()
+        Logger.error('salesforce', 'Webhook retornou erro HTTP', {
+          email: leadData.email,
+          status: response.status,
+          statusText: response.statusText,
+          errorData,
+          responseTime: `${responseTime}ms`
+        })
+        throw new Error(`Failed to send lead to Salesforce webhook: ${response.statusText} - ${errorData}`)
+      }
+
+      const result: SalesforceWebhookResponse = await response.json()
+      
+      Logger.info('salesforce', 'Resposta do webhook processada', {
+        email: leadData.email,
+        success: result.success,
+        salesforceId: result.id,
+        message: result.message,
+        responseTime: `${responseTime}ms`
+      })
+      
+      if (!result.success) {
+        Logger.error('salesforce', 'Webhook retornou success=false', {
+          email: leadData.email,
+          result,
+          responseTime: `${responseTime}ms`
+        })
+        throw new Error(`Salesforce webhook failed: ${result.message || JSON.stringify(result.errors)}`)
+      }
+
+      Logger.info('salesforce', 'Lead criado com sucesso no Salesforce', {
+        email: leadData.email,
+        salesforceId: result.id,
+        responseTime: `${responseTime}ms`
+      })
+
+      return result.id || `webhook_${Date.now()}`
+    } catch (error) {
+      const responseTime = Date.now() - startTime
+      Logger.error('salesforce', 'Erro na requisição do webhook', {
+        email: leadData.email,
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
+        responseTime: `${responseTime}ms`
+      }, error instanceof Error ? error : new Error('Erro desconhecido'))
+      throw error
+    }
   }
 }
 
