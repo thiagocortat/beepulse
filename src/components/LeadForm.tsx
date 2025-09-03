@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { insertLead, LeadBeePulse } from '@/lib/supabase'
 
@@ -22,12 +22,21 @@ export default function LeadForm({ analysisData }: LeadFormProps) {
     nome_completo: '',
     email: '',
     telefone: '',
-    nome_hotel: ''
+    nome_hotel: '',
+    site_url: ''
   })
-  
+  const [leadSource, setLeadSource] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    const lastUrl = typeof window !== 'undefined' ? localStorage.getItem('lastAnalyzedUrl') : null
+    const initialUrl = analysisData?.url || lastUrl || ''
+    const storedSource = typeof window !== 'undefined' ? localStorage.getItem('lead_source') : ''
+    setFormData(prev => ({ ...prev, site_url: initialUrl }))
+    setLeadSource(storedSource || '')
+  }, [analysisData])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -41,10 +50,14 @@ export default function LeadForm({ analysisData }: LeadFormProps) {
 
     try {
       const lastUrl = typeof window !== 'undefined' ? localStorage.getItem('lastAnalyzedUrl') : null
-      const siteUrl = analysisData?.url || lastUrl || null
+      const siteFromForm = formData.site_url?.trim() || ''
+      const siteUrl = siteFromForm || analysisData?.url || lastUrl || null
 
-      const leadData = {
-        ...formData,
+      const leadData: any = {
+        nome_completo: formData.nome_completo,
+        email: formData.email,
+        telefone: formData.telefone,
+        nome_hotel: formData.nome_hotel,
         site_url: siteUrl,
         score_basico: analysisData ? JSON.stringify({
           performance: analysisData.performance,
@@ -52,6 +65,10 @@ export default function LeadForm({ analysisData }: LeadFormProps) {
           mobile: analysisData.mobile,
           overall: analysisData.overall
         }) : null
+      }
+
+      if (leadSource) {
+        leadData.lead_source = leadSource
       }
       
       const response = await fetch('/api/lead', {
@@ -74,9 +91,8 @@ export default function LeadForm({ analysisData }: LeadFormProps) {
 
       const leadId = result.lead.id
       
+      try { localStorage.removeItem('lead_source') } catch {}
       router.push(`/relatorio/${leadId}`)
-      
-      // Email desativado - removido conforme solicitação do usuário
       
     } catch (err) {
       setError('Erro ao enviar formulário. Tente novamente.')
@@ -124,15 +140,16 @@ export default function LeadForm({ analysisData }: LeadFormProps) {
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            Receba seu Relatório Completo
+            Fale com um especialista Omnibees
           </h2>
           <p className="text-xl text-gray-600">
-            Preencha os dados abaixo e descubra como melhorar a performance do seu site
+            Deixe seus dados e nossa equipe entra em contato para orientar os próximos passos.
           </p>
         </div>
         
         <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12">
           <form onSubmit={handleSubmit} className="space-y-6">
+            <input type="hidden" name="lead_source" value={leadSource} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label htmlFor="nome_completo" className="block text-sm font-semibold text-gray-700 mb-2">
@@ -199,6 +216,21 @@ export default function LeadForm({ analysisData }: LeadFormProps) {
                   placeholder="Nome do seu hotel"
                 />
               </div>
+            </div>
+
+            <div>
+              <label htmlFor="site_url" className="block text-sm font-semibold text-gray-700 mb-2">
+                Site do hotel
+              </label>
+              <input
+                type="text"
+                id="site_url"
+                name="site_url"
+                value={formData.site_url}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-200"
+                placeholder="https://seuhotel.com.br"
+              />
             </div>
             
             <div className="pt-4">

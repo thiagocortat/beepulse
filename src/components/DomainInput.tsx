@@ -12,8 +12,13 @@ export default function DomainInput({ onAnalyze, isLoading }: DomainInputProps) 
   const [error, setError] = useState('')
 
   const validateUrl = (input: string): boolean => {
-    const urlRegex = /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/
+    const urlRegex = /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/
     return urlRegex.test(input)
+  }
+
+  const handleChange = (value: string) => {
+    setUrl(value)
+    try { localStorage.setItem('lastAnalyzedUrl', value) } catch {}
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -58,7 +63,7 @@ export default function DomainInput({ onAnalyze, isLoading }: DomainInputProps) 
               <input
                 type="text"
                 value={url}
-                onChange={(e) => setUrl(e.target.value)}
+                onChange={(e) => handleChange(e.target.value)}
                 placeholder="Digite o site do seu hotel (ex: https://seuhotel.com.br)"
                 className={`w-full px-4 py-3 border-2 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-omnibees-yellow transition-colors ${
                   error ? 'border-red-500' : 'border-gray-300 focus:border-omnibees-yellow'

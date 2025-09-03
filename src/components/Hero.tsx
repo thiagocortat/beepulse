@@ -1,10 +1,18 @@
-'use client'
+"use client"
 
 export default function Hero() {
   const scrollToAnalysis = () => {
     const analysisElement = document.getElementById('domain-analysis')
     if (analysisElement) {
       analysisElement.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  const scrollToLeadFormWithSource = () => {
+    try { localStorage.setItem('lead_source', 'cta_beepulse_fale_com_especialista') } catch {}
+    const formElement = document.getElementById('lead-form')
+    if (formElement) {
+      formElement.scrollIntoView({ behavior: 'smooth' })
     }
   }
 
@@ -19,12 +27,20 @@ export default function Hero() {
           Descubra como seu site está performando e conquiste mais reservas diretas.
         </p>
         
-        <button 
-          onClick={scrollToAnalysis}
-          className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-4 px-8 rounded-lg text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-        >
-          Analise Agora
-        </button>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <button 
+            onClick={scrollToAnalysis}
+            className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-4 px-8 rounded-lg text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-400"
+          >
+            Analisar Agora
+          </button>
+          <button
+            onClick={scrollToLeadFormWithSource}
+            className="bg-transparent border-2 border-[#FFD200] text-[#1A1A1A] font-bold py-4 px-8 rounded-lg text-lg transition-all duration-300 hover:bg-[#FFD200] hover:text-[#1A1A1A] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-400"
+          >
+            Fale com um especialista
+          </button>
+        </div>
         
         <div className="mt-16 relative">
           <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl mx-auto border border-gray-100">

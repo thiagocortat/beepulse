@@ -10,7 +10,7 @@ interface SalesforceWebhookResponse {
 }
 
 class SalesforceService {
-  static async createLead(leadData: LeadBeePulse): Promise<string> {
+  static async createLead(leadData: LeadBeePulse, leadSource?: string): Promise<string> {
     const webhookUrl = process.env.SALESFORCE_WEBHOOK_URL
     
     if (!webhookUrl) {
@@ -18,12 +18,11 @@ class SalesforceService {
       throw new Error('SALESFORCE_WEBHOOK_URL não configurada')
     }
     
-    // Separar nome completo em FirstName e LastName
     const nameParts = leadData.nome_completo.trim().split(' ')
     const firstName = nameParts[0]
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'N/A'
     
-    const webhookData = {
+    const webhookData: Record<string, any> = {
       FirstName: firstName,
       LastName: lastName,
       Email: leadData.email,
@@ -32,10 +31,11 @@ class SalesforceService {
       Website: leadData.site_url,
       Status: 'Novo Lead – BeePulse',
       Score_BeePulse__c: leadData.score_basico ? parseFloat(leadData.score_basico) : null,
-//      Relatorio_BeePulse_URL__c: leadData.pdf_url,
       Source: 'BeePulse',
       CreatedAt: new Date().toISOString()
     }
+
+    if (leadSource) webhookData.lead_source = leadSource
 
     Logger.info('salesforce', 'Enviando lead para webhook', {
       webhookUrl: webhookUrl.replace(/\/[^/]+$/, '/***'),
@@ -124,9 +124,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const leadData: Omit<LeadBeePulse, 'id' | 'created_at'> = req.body
+    const body: any = req.body
 
-    // Validar dados obrigatórios
+    const leadData: Omit<LeadBeePulse, 'id' | 'created_at'> = {
+      nome_completo: body.nome_completo,
+      email: body.email,
+      telefone: body.telefone,
+      nome_hotel: body.nome_hotel,
+      site_url: body.site_url || null,
+      score_basico: body.score_basico || null,
+      relatório_avancado: body.relatório_avancado || null,
+      pdf_url: body.pdf_url || null,
+      salesforce_id: null,
+      email_sent: false,
+      analysis_id: body.analysis_id || null
+    }
+
+    const leadSource: string | undefined = typeof body.lead_source === 'string' ? body.lead_source : undefined
+
     if (!leadData.nome_completo || !leadData.email || !leadData.telefone || !leadData.nome_hotel) {
       return res.status(400).json({ error: 'Dados obrigatórios ausentes' })
     }
@@ -134,13 +149,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let salesforceId: string | null = null
     let salesforceError: string | null = null
 
-    // Tentar enviar para o Salesforce
     try {
-      // Verificar se a URL do webhook do Salesforce está configurada
       if (process.env.SALESFORCE_WEBHOOK_URL && 
           process.env.SALESFORCE_WEBHOOK_URL !== 'https://your-webhook-url.com/salesforce') {
         
-        salesforceId = await SalesforceService.createLead(leadData)
+        salesforceId = await SalesforceService.createLead(leadData, leadSource)
         Logger.info('salesforce', 'Lead enviado com sucesso', { salesforceId, email: leadData.email })
       } else {
         Logger.info('salesforce', 'Salesforce não configurado - modo demo')
@@ -151,14 +164,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       salesforceError = error instanceof Error ? error.message : 'Erro desconhecido'
     }
 
-    // Salvar no Supabase com o ID do Salesforce
     const leadWithSalesforce = {
-      ...leadData,
+      nome_completo: leadData.nome_completo,
+      email: leadData.email,
+      telefone: leadData.telefone,
+      nome_hotel: leadData.nome_hotel,
+      site_url: leadData.site_url || null,
+      score_basico: leadData.score_basico || null,
       salesforce_id: salesforceId,
-      email_sent: false
+      email_sent: false,
+      analysis_id: leadData.analysis_id || null,
+      pdf_url: leadData.pdf_url || null,
+      relatório_avancado: leadData.relatório_avancado || null
     }
 
-    // Verificar se o Supabase está configurado ou usar modo demo em caso de erro
     if (process.env.NEXT_PUBLIC_SUPABASE_URL === 'https://placeholder.supabase.co') {
       Logger.info('supabase', 'Lead salvo em modo demo', { email: leadData.email, salesforce_id: salesforceId })
       const mockLead = { 
@@ -175,7 +194,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       })
     }
 
-    // Tentar salvar no Supabase com fallback para modo demo
     try {
       const { data, error } = await supabase
         .from('leads_beepulse')
@@ -195,7 +213,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } catch (supabaseError) {
       Logger.error('supabase', 'Erro ao salvar lead no Supabase - usando modo demo', { email: leadData.email }, supabaseError instanceof Error ? supabaseError : new Error('Erro desconhecido'))
       
-      // Fallback para modo demo quando Supabase falha
       const mockLead = { 
         ...leadWithSalesforce, 
         id: Date.now(), 
